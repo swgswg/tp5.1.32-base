@@ -21,4 +21,5 @@
     });
  */
 
-Route::miss('api/v1.Miss/miss');
+Route::post('api/upload','api/Upload/upload');
+Route::miss('api/Miss/miss');
