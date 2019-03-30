@@ -22,4 +22,5 @@
  */
 
 Route::post('api/upload','api/Upload/upload');
+Route::post('api/qrcode','api/Upload/qrcode');
 Route::miss('api/Miss/miss');

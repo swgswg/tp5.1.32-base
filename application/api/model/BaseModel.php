@@ -25,7 +25,7 @@ class BaseModel extends Model
     // 设置完整图片路径 ($value, $data)
     protected function prefixImgUrl($value)
     {
-        return config('program.img_prefix').$value;
+        return config('program.image_prefix').$value;
     }
 
 

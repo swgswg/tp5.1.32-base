@@ -10,6 +10,7 @@ namespace app\api\service\upload;
 
 use app\api\com\StringUtil;
 use app\lib\exception\UploadException;
+use OSS\OssService;
 use think\facade\Request;
 
 class BaseUpload
@@ -58,6 +59,12 @@ class BaseUpload
      */
     protected $clientMediaType;
 
+    /**
+     * 临时路径
+     * @var
+     */
+    protected $tmpPath;
+
     public function __construct($type)
     {
         if(empty($type)){
@@ -89,8 +96,8 @@ class BaseUpload
         $this->getFileInfo();
         $this->needChecks();
         $this->fileName = $this->getFileName();
-        $filePath = $this->getFilePath($this->fileName);
-        $this->moveTo($filePath);
+        $this->tmpPath = $this->getTmpName();
+        $this->moveTo($this->fileType, $this->fileName, $this->tmpPath);
         return $this->fileName;
     }
 
@@ -157,29 +164,15 @@ class BaseUpload
 
 
     /**
-     * 获取新文件完成路径(带文件名)
-     * @param string $fileName  文件要保存的名称
-     * @return string 文件名
-     */
-    protected function getFilePath($fileName)
-    {
-        $savePath = config('program.static_image');
-        if(!is_dir($savePath)){
-            mkdir($savePath, 0777, true);
-        }
-        $url = $savePath . $fileName;
-        return $url;
-    }
-
-
-    /**
      * 移动临时文件到指定目录 保存文件
-     * @param $url
+     * @param string $type 文件类型
+     * @param string $fileName 文件名称
+     * @param string $tmpPath 文件临时路径
      * @throws UploadException
      */
-    protected function moveTo($url)
+    protected function moveTo($type, $fileName, $tmpPath)
     {
-        $res = move_uploaded_file($this->getTmpName(), $url);
+        $res = MoveUploadFile::getInstance($type, $fileName, $tmpPath)->moveTo();
         if(!$res){
             throw new UploadException([
                 'code' => 400,
@@ -188,6 +181,9 @@ class BaseUpload
             ]);
         }
     }
+
+
+
 
 
     /**
