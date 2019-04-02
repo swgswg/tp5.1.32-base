@@ -19,25 +19,25 @@ class TimeUtil extends BaseCom
      */
     public function secondChange($sec, $format = 'd天h小时m分钟s秒')
     {
-        if(strrpos($format, 'd') !== false){
+        if(strpos($format, 'd') !== false){
             $day = floor( $sec / 86400);
             $sec = $sec % 86400;
-            $format = str_replace('d', $day,    $format);
+            $format = str_replace('d', $day, $format);
         }
 
-        if(strrpos($format, 'h') !== false){
+        if(strpos($format, 'h') !== false){
             $hour = floor($sec / 3600);
             $sec = $sec % 3600;
-            $format = str_replace('h', $hour,   $format);
+            $format = str_replace('h', $hour, $format);
         }
 
-        if(strrpos($format, 'm') !== false){
+        if(strpos($format, 'm') !== false){
             $minute = floor($sec / 60);
             $sec = $sec % 60;
             $format = str_replace('m', $minute, $format);
         }
 
-        if(strrpos($format, 's') !== false){
+        if(strpos($format, 's') !== false){
             $format = str_replace('s', $sec, $format);
         }
 
@@ -45,73 +45,39 @@ class TimeUtil extends BaseCom
     }
 
 
-    /**
-     * 获取某年某月的第一天和最后一天时间戳(日期)
-     * @param string $month 日期(默认当前时间)
-     * @param string $flag date返回日期, time返回时间戳
-     * @return array
-     */
-    public function firstAndLastTimestamp($month = '', $flag = 'time')
-    {
-        // $month = '2018-12';
-        if($month != ''){
-            $str = strtotime($month);
-            if(empty($str)){
-                return false;
-            }
-            $firstDayDate = date('Y-m-01 00:00:00', $str);
-            $lastDayDate = date('Y-m-t 23:59:59', $str);
-        } else {
-            $firstDayDate = date('Y-m-01 00:00:00');
-            $lastDayDate = date('Y-m-t 23:59:59');
-        }
-        if($flag == 'time'){
-            $firstDayTime = strtotime($firstDayDate);
-            $lastDayTime = strtotime($lastDayDate);
-            $data = [
-                $firstDayTime,
-                $lastDayTime
-            ];
-        } else {
-            $data = [
-                $firstDayDate,
-                $lastDayDate
-            ];
-        }
-        return $data;
-    }
-
 
     /**
-     * 获取两个月份的开始和结束时间戳
-     * @param $month1
-     * @param $month2
+     * 时间段内 开始-结束 时间戳/日期
+     * @param $startTime
+     * @param $endTime
      * @param string $flag
      * @return array|bool
      */
-    function firstAndLastTwoMonth($month1, $month2, $flag = 'time')
+    function periodOfTime($startTime = '', $endTime = '', $flag = 'time')
     {
-        $a = strtotime($month1);
-        $b = strtotime($month2);
-        if(!$a || !$b){
-            return false;
+        $a = strtotime($startTime);
+        $b = strtotime($endTime);
+        if($a === false){
+            $a = time();
+            $startTime = date('Y-m-d');
+        }
+        if($b === false){
+            $b = time();
+            $endTime = date('Y-m-d');
         }
         if($a < $b){
-            $max = $b;
-            $min = $a;
+            $max = $endTime;
+            $min = $startTime;
         } else {
-            $max = $a;
-            $min = $b;
+            $max = $startTime;
+            $min = $endTime;
         }
-        if($flag == 'time'){
-            $firstDayTime= strtotime(date('Y-m-01 00:00:00', $min));
-            $lastDayTime = strtotime(date('Y-m-t 23:59:59', $max));
-            $data = [$firstDayTime, $lastDayTime];
-        } else {
-            $firstDayDate = date('Y-m-01 00:00:00', $min);
-            $lastDayDate = date('Y-m-t 23:59:59', $max);
-            $data = [$firstDayDate, $lastDayDate];
-        }
+        $start= $this -> timeStartEnd($min, $flag);
+        $end  = $this -> timeStartEnd($max, $flag);
+        $data = [
+            'start_time' => $start['start_time'],
+            'end_time'   => $end['end_time']
+        ];
         return $data;
     }
 
@@ -122,53 +88,42 @@ class TimeUtil extends BaseCom
      * @param string $flag time输出时间戳/date输出日期
      * @return array
      */
-    public function changeTime($time = '', $flag = 'time')
+    public function timeStartEnd($time = '', $flag = 'time')
     {
-        if($time){
-            if($time){
-                $str = strtotime($time);
-            } else {
-                $str = time();
-                $time = date('Y-m-d');
-            }
-            if(empty($str)){
-                return false;
-            }
-            $timeArr = explode('-', $time);
-            foreach ($timeArr as $v){
-                if($v <= 0){
-                    return false;
-                }
-            }
-            $timeCount = count($timeArr);
-            if($timeCount == 3){
-                // 年月日
-                $startDate =date('Y-m-d 00:00:00', $str);
-                $endDate  = date('Y-m-d 23:59:59', $str);
-                $data = [$startDate, $endDate];
-            } else if($timeCount == 2){
+        $str = strtotime($time);
+        if($str === false ){
+            $str = time();
+            $time = date('Y-m-d');
+        }
+        $timeArr = explode('-', $time);
+        $timeCount = count($timeArr);
+        switch ($timeCount) {
+            case 1:
+                // 年
+                $startDate =date('Y-01-01 00:00:00', $str);
+                $endDate  = date('Y-12-t 23:59:59', $str);
+                $data = ['start' => $startDate, 'end' => $endDate];
+                break;
+            case 2:
                 // 年月
                 $startDate =date('Y-m-01 00:00:00', $str);
                 $endDate  = date('Y-m-t 23:59:59', $str);
-                $data = [$startDate, $endDate];
-            } else if($timeCount == 1){
-                // 年
-                $startDate =date('Y-01-01 00:00:00', $str);
-                $endDate  = date('Y-01-t 23:59:59', $str);
-                $data = [$startDate, $endDate];
-            } else {
-                return false;
-            }
-
-            if($flag == 'time'){
-                $startTime = strtotime($startDate);
-                $endTime = strtotime($endDate);
-                $data = [$startTime, $endTime];
-            }
-            return $data;
-        } else {
-            return false;
+                $data = ['start' => $startDate, 'end' => $endDate];
+                break;
+            default:
+                // 年月日
+                $startDate =date('Y-m-d 00:00:00', $str);
+                $endDate  = date('Y-m-d 23:59:59', $str);
+                $data = ['start' => $startDate, 'end' => $endDate];
+                break;
         }
+        if($flag == 'time'){
+            $startTime = strtotime($startDate);
+            $endTime = strtotime($endDate);
+            $data = ['start' => $startTime, 'end' => $endTime];
+        }
+        return $data;
+
     }
 
 
