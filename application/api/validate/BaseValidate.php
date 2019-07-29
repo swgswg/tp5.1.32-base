@@ -225,6 +225,27 @@ class BaseValidate extends Validate
         }
     }
 
+
+    /**
+     * 检测是否是正确 url 地址
+     * @param $value
+     * @param string $rule
+     * @param string $data
+     * @param string $field
+     * @return bool|string
+     */
+    protected function isUrl($value, $rule = '', $data = '', $field = '')
+    {
+        $rule = '(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]';
+        $result = preg_match($rule, $value);
+        if ($result) {
+            return true;
+        } else {
+            return $field.'格式不正确';
+        }
+    }
+
+
     /**
     *  检测参数中是否包含user_id, 获取rule验证的参数
     * @param $arrays

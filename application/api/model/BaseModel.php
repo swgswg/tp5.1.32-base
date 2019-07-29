@@ -83,7 +83,17 @@ class BaseModel extends Model
                 foreach ($whereFields as $k=>$v){
                     if(isset($wheres[$v[0]])){
                         if($v[1] == 'like'){
-                            $v[2] = '%'.$wheres[$v[0]].'%';
+                            if(isset($v[3])){
+                                if($v[3] == 'left'){
+                                    $v[2] = '%'.$wheres[$v[0]];
+                                } else if($v[3] == 'right'){
+                                    $v[2] = $wheres[$v[0]].'%';
+                                } else {
+                                    $v[2] = '%'.$wheres[$v[0]].'%';
+                                }
+                            } else {
+                                $v[2] = '%'.$wheres[$v[0]].'%';
+                            }
                         } else {
                             $v[2] = $wheres[$v[0]];
                         }
